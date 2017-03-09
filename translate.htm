@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title>Cloud Translate Demo</title>
+	<style type="text/css">
+		pre {outline: 1px solid #ccc; padding: 5px; margin: 5px; }
+.string { color: green; }
+.number { color: darkorange; }
+.boolean { color: blue; }
+.null { color: magenta; }
+.key { color: red; }
+	</style>
+	<script src="https://ajax.googleapis.com/ajax/libs/jquery/2.2.2/jquery.min.js"></script>
+</head>
+<body>
+	<h1>Cloud Translation Demo</h1>
+	<form id="fileform" action="">
+		<textarea name="text_tt" placeholder="enter text to translate here" rows="5" cols="50"></textarea><br /><br />
+		<select name="source" id="source">
+			<option>-- choose source language --</option>
+			<option value="en">English</option>
+		</select><br /><br />
+		<select name="target" id="target">
+			<option>-- choose target language --</option>
+			<option value="yo">Yoruba</option>
+		</select><br /><br />
+		<input type="submit" name="submit" value="Translate">
+	</form>
+
+	<div id="results"></div>
+</body>
+<script type="text/javascript">
+window.apiKey = 'AIzaSyA1HEkQ8nh8CoHIVbDdYFnwAa8VphhGphQ';
+
+var CV_URL = 'https://translation.googleapis.com/language/translate/v2?key=' + window.apiKey;
+
+$(function () {
+  $('#fileform').on('submit', translateText);
+});
+
+function translateText (event) {
+  event.preventDefault(); // Prevent the default form post
+  var source = $('#fileform [name=source]').val();
+  var target = $('#fileform [name=target]').val();
+  var text_tt = $('#fileform [name=text_tt]').val();
+
+ 
+  var request = {
+	  "q": text_tt,
+	  "source": source,
+	  "target": target,
+	  "format": "text"
+	};
+
+  $('#results').text('Loading...');
+  $.post({
+    url: CV_URL,
+    data: JSON.stringify(request),
+    contentType: 'application/json'
+  }).fail(function (jqXHR, textStatus, errorThrown) {
+    $('#results').text('ERRORS: ' + textStatus + ' ' + errorThrown);
+  }).done(displayJSON);
+}
+
+/**
+ * Displays the results.
+ */
+function displayJSON (data) {
+  var contents = JSON.stringify(data, null, 4);
+  $('#results').text("Translation response");
+  output(syntaxHighlight(contents));
+  var evt = new Event('results-displayed');
+  evt.results = contents;
+  document.dispatchEvent(evt);
+}
+
+function output(inp) {
+    document.body.appendChild(document.createElement('pre')).innerHTML = inp;
+}
+
+function syntaxHighlight(json) {
+    json = json.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+    return json.replace(/("(\\u[a-zA-Z0-9]{4}|\\[^u]|[^\\"])*"(\s*:)?|\b(true|false|null)\b|-?\d+(?:\.\d*)?(?:[eE][+\-]?\d+)?)/g, function (match) {
+        var cls = 'number';
+        if (/^"/.test(match)) {
+            if (/:$/.test(match)) {
+                cls = 'key';
+            } else {
+                cls = 'string';
+            }
+        } else if (/true|false/.test(match)) {
+            cls = 'boolean';
+        } else if (/null/.test(match)) {
+            cls = 'null';
+        }
+        return '<span class="' + cls + '">' + match + '</span>';
+    });
+}
+
+</script>
+</html>
