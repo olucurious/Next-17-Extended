@@ -1,2 +1,2 @@
 # Next-17-Extended
-Cloud Vision demo at Next '17 Extended - Ibadan
+Cloud Vision and Translation demo at Next '17 Extended - Ibadan
